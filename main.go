@@ -12,13 +12,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+func APIKeyAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		apiKey := c.GetHeader("Authorization")
+		if len(apiKey) == 0 {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Authorization header is required"})
+			return
+		}
+
+		if apiKey != Env.ApiKey {
+			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"message": "Invalid API key"})
+			return
+		}
+
+		c.Next()
+	}
+}
+
 func setupRouter() *gin.Engine {
 	r := gin.Default()
 
 	r.GET("/ping", func(c *gin.Context) {
 		c.String(http.StatusOK, "pong")
 	})
-	r.POST("/drts", validateLP)
+	api := r.Group("/api", APIKeyAuthMiddleware())
+	api.POST("/drts", validateLP)
 
 	return r
 }

@@ -17,6 +17,7 @@ func LoadDotEnv[T interface{}](config *T) {
 type _Env struct {
 	Port string `env:"PORT"`
 	DRTS_API  string `env:"DRTS_API,required"`
+	ApiKey string `env:"API_KEY,required"`
 }
 
 var Env _Env
