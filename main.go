@@ -88,7 +88,13 @@ func validateLP(c *gin.Context) {
 	resp, err := http.Post(Env.DRTS_API, "application/json", &reqBuf)
 	if err != nil {
 		Log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "DRTS api call failed"})
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown"})
+		return
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		Log.Println("DRTS api failed:", resp.Status)
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Unknown"})
 		return
 	}
 
@@ -99,5 +105,7 @@ func validateLP(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"data": string(buf)})
+	data := make(map[string]any)
+	json.NewDecoder(bytes.NewBuffer(buf)).Decode(&data)
+	c.JSON(http.StatusOK, data)
 }
